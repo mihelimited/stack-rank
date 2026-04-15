@@ -7,7 +7,7 @@
 import { InteractiveMergeSort, estimateComparisons } from './sorter.js';
 import { getDB, getFingerprint, computeAggregate } from './db.js';
 import { TemplatesBrowser } from './templates.js';
-import { sharePodium, downloadPodium } from './podium.js';
+import { renderPodium, sharePodium, downloadPodium } from './podium.js';
 import { getRoute, setRoute, onRouteChange } from './router.js';
 
 // ---------- State ----------
@@ -20,6 +20,12 @@ const state = {
   source: null,          // { kind: 'fresh'|'template'|'room', slug?, roomId?, title? }
   imageItems: [],
   roomUnsub: null,
+  // Pre-rendered podium File, cached on results show so we can call
+  // navigator.share synchronously inside the click handler (iOS
+  // transient-user-activation requires this — any async work before
+  // share() on iOS drops the gesture token and the call is rejected).
+  podiumFile: null,
+  podiumFileKey: null,   // invalidation key so we don't serve stale
 };
 
 // ---------- DOM refs ----------
@@ -151,6 +157,8 @@ function showSetup() {
   setupScreen.style.display = 'block';
   stopRoomSubscription();
   state.source = null;
+  state.podiumFile = null;
+  state.podiumFileKey = null;
 }
 
 // ---------- Tabs ----------
@@ -386,6 +394,9 @@ async function finishGame() {
     progressWrap.style.display = 'block';
     progressFill.style.width = '100%';
     progressText.textContent = `${state.comparisonsDone} battles · done`;
+    // Pre-render podium so the Share button works synchronously on iOS.
+    // Room results are always text.
+    prerenderPodium(state.source?.title || 'My Stack Rank', result);
     return;
   }
 
@@ -416,6 +427,12 @@ async function finishGame() {
 
   // Share is always available
   if (shareBtn) shareBtn.style.display = 'inline-block';
+
+  // Pre-render the podium PNG for text-only rankings so navigator.share
+  // can be called synchronously from the click handler on iOS.
+  if (result.every(it => it.type === 'text')) {
+    prerenderPodium(state.source?.title || 'My Stack Rank', result);
+  }
 }
 
 function renderRanking(container, items, extraMeta) {
@@ -487,11 +504,13 @@ function wireResults() {
     const result = state.sorter.result();
     const text = result.map((it, i) => `${i + 1}. ${it.label}`).join('\n');
     try {
-      await navigator.clipboard.writeText(text);
+      await copyTextToClipboard(text);
       copyBtn.textContent = 'Copied!';
       setTimeout(() => copyBtn.textContent = 'Copy as list', 1500);
-    } catch {
+    } catch (e) {
+      console.warn('Copy failed:', e);
       copyBtn.textContent = 'Copy failed';
+      setTimeout(() => copyBtn.textContent = 'Copy as list', 1500);
     }
   });
 
@@ -504,21 +523,53 @@ function wireResults() {
         setTimeout(() => shareBtn.textContent = 'Share image', 1500);
         return;
       }
-      shareBtn.disabled = true;
-      shareBtn.textContent = 'Rendering…';
-      try {
-        await sharePodium({
-          title: state.source?.title || 'My Stack Rank',
-          items: result,
-        });
-        shareBtn.textContent = 'Share image';
-      } catch (e) {
-        console.warn('Share failed:', e);
-        shareBtn.textContent = 'Share failed';
-        setTimeout(() => shareBtn.textContent = 'Share image', 1500);
-      } finally {
+
+      // Try to use the file we pre-rendered when results showed.
+      // If it isn't ready yet (user tapped super fast), fall back to
+      // rendering now — but that path WILL lose the user-gesture
+      // token on iOS, so save-as-image modal will handle it.
+      let file = state.podiumFile;
+      if (!file) {
+        shareBtn.disabled = true;
+        shareBtn.textContent = 'Rendering…';
+        try {
+          const blob = await renderPodium({
+            title: state.source?.title || 'My Stack Rank',
+            items: result,
+          });
+          file = new File([blob], 'stack-rank.png', { type: 'image/png' });
+          state.podiumFile = file;
+        } catch (e) {
+          console.warn('Render failed:', e);
+          shareBtn.textContent = 'Render failed';
+          setTimeout(() => shareBtn.textContent = 'Share image', 1500);
+          shareBtn.disabled = false;
+          return;
+        }
         shareBtn.disabled = false;
+        shareBtn.textContent = 'Share image';
       }
+
+      // Call navigator.share synchronously (inside the click handler's
+      // microtask) so iOS keeps the user-gesture token alive.
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: state.source?.title || 'Stack Rank',
+            text: 'My ranking — made with Stack Rank',
+          });
+          return;
+        } catch (e) {
+          // AbortError just means the user dismissed the sheet — no fallback.
+          if (e && e.name === 'AbortError') return;
+          console.warn('navigator.share failed:', e);
+        }
+      }
+
+      // Fallback: display the image in a modal so the user can
+      // long-press (iOS) or right-click to save it.
+      showImageSaveFallback(file);
     });
   }
 
@@ -824,6 +875,100 @@ function wireSaveTemplateModal() {
   });
 }
 
+// ---------- Clipboard (iOS-safe) ----------
+// Tries the modern async API first, then falls back to a legacy
+// textarea+execCommand flow that still works in WKWebView-based
+// browsers where navigator.clipboard throws or is undefined.
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch (e) {
+      console.warn('navigator.clipboard.writeText failed, falling back:', e);
+    }
+  }
+  // Legacy path
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  // Off-screen but still selectable (opacity/display:none block iOS selection)
+  ta.style.position = 'absolute';
+  ta.style.left = '-9999px';
+  ta.style.top = '0';
+  // Prevent iOS zoom on focus
+  ta.style.fontSize = '16px';
+  document.body.appendChild(ta);
+
+  const iOS = /ipad|iphone|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  try {
+    if (iOS) {
+      // iOS needs contenteditable + Range+Selection to get a valid copy target
+      ta.contentEditable = 'true';
+      ta.readOnly = true;
+      const range = document.createRange();
+      range.selectNodeContents(ta);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      ta.setSelectionRange(0, text.length);
+    } else {
+      ta.select();
+    }
+    const ok = document.execCommand('copy');
+    if (!ok) throw new Error('execCommand("copy") returned false');
+  } finally {
+    document.body.removeChild(ta);
+  }
+}
+
+// ---------- Podium pre-render (iOS-safe share) ----------
+// Renders the podium PNG eagerly so the share click handler can call
+// navigator.share synchronously (any awaited work between the click
+// and navigator.share() drops iOS's transient-user-activation token).
+async function prerenderPodium(title, items) {
+  const key = items.map(it => it.label).join('|') + '::' + (title || '');
+  state.podiumFileKey = key;
+  state.podiumFile = null;
+  try {
+    const blob = await renderPodium({ title, items });
+    // Guard against stale renders (user navigated away or re-ranked)
+    if (state.podiumFileKey !== key) return;
+    state.podiumFile = new File([blob], 'stack-rank.png', { type: 'image/png' });
+  } catch (e) {
+    console.warn('Podium pre-render failed:', e);
+  }
+}
+
+// Fallback image-save modal for when navigator.share isn't available
+// or refuses to fire. The user long-presses (iOS) or right-clicks
+// (desktop) the image to save it.
+function showImageSaveFallback(file) {
+  const url = URL.createObjectURL(file);
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop visible';
+  backdrop.innerHTML = `
+    <div class="modal" style="max-width:600px;">
+      <h3>Save your ranking</h3>
+      <p>Long-press the image below and pick <strong>Save to Photos</strong> (or <strong>Download image</strong> on desktop).</p>
+      <img alt="Your ranking" style="display:block; width:100%; border-radius:12px; margin-bottom:16px; border:1px solid var(--border);">
+      <div class="modal-actions">
+        <button class="primary" type="button">Done</button>
+      </div>
+    </div>
+  `;
+  backdrop.querySelector('img').src = url;
+  const cleanup = () => {
+    backdrop.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
+  backdrop.querySelector('button').addEventListener('click', cleanup);
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) cleanup();
+  });
+  document.body.appendChild(backdrop);
+}
+
 // ---------- Utilities ----------
 function escapeHtml(s) {
   return String(s)
@@ -835,6 +980,12 @@ function escapeHtml(s) {
 }
 
 // ---------- Go ----------
+// Expose state on window for debugging / preview verification only.
+// Not used by any production code path.
+if (typeof window !== 'undefined') {
+  window.__stackRank = { state };
+}
+
 init().catch(e => {
   console.error(e);
   errorMsg.textContent = 'Something went wrong loading the app.';
