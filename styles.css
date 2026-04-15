@@ -278,6 +278,49 @@ button.ghost {
 }
 button.ghost:hover { background: rgba(255, 255, 255, 0.12); }
 
+/* ---------- Browse templates (below hero on setup screen) ---------- */
+.browse-templates {
+  max-width: 1100px;
+  margin: 72px auto 0;
+  padding: 0 8px;
+}
+.browse-heading {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.browse-heading h2 {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 8px;
+}
+.browse-heading h2 .gradient {
+  background: linear-gradient(90deg, var(--accent), var(--accent-hot));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.browse-heading p {
+  color: var(--text-dim);
+  font-size: 16px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+/* The browse instance lives outside .input-card, so it needs its own
+ * backdrop to keep the cards readable against the page gradient. */
+.browse-templates #browseTemplates {
+  background: var(--card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 24px;
+}
+.browse-templates .template-grid {
+  max-height: none;
+  overflow-y: visible;
+}
+
 /* ---------- Templates browser ---------- */
 .template-search {
   width: 100%;

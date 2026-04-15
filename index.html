@@ -9,6 +9,17 @@
 <meta property="og:description" content="Drop in a list or pick a template, then pick winners in one-tap battles.">
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="styles.css">
+<script>
+  // Firebase config is public by design — security lives in Firestore rules.
+  window.STACK_RANK_FIREBASE_CONFIG = {
+    apiKey: "AIzaSyATu80kBmhh3DszZItelWUkUbuBjS7JqG8",
+    authDomain: "stack-rank-2026.firebaseapp.com",
+    projectId: "stack-rank-2026",
+    storageBucket: "stack-rank-2026.firebasestorage.app",
+    messagingSenderId: "805068169814",
+    appId: "1:805068169814:web:3bc272e5a61f09d3dad1f7"
+  };
+</script>
 </head>
 <body>
 
@@ -59,6 +70,15 @@
         </div>
       </div>
       <div class="error" id="errorMsg"></div>
+    </div>
+
+    <!-- Browse templates (visible below the hero so you can scroll through the catalog on first load) -->
+    <div class="browse-templates">
+      <div class="browse-heading">
+        <h2>Or pick a <span class="gradient">template</span></h2>
+        <p>50 curated lists across food, sports, films, programming, music and more.</p>
+      </div>
+      <div id="browseTemplates"></div>
     </div>
   </section>
 

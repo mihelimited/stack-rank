@@ -34,6 +34,7 @@ const tabs = document.querySelectorAll('.tab');
 const textPanel = $('textPanel');
 const imagePanel = $('imagePanel');
 const templatesPanel = $('templatesPanel');
+const browseTemplatesRoot = $('browseTemplates');
 const textInput = $('textInput');
 const fileInput = $('fileInput');
 const fileDrop = $('fileDrop');
@@ -86,6 +87,7 @@ const saveTemplateCancel = $('saveTemplateCancel');
 
 // ---------- Initialisation ----------
 let templatesBrowser = null;
+let homepageTemplatesBrowser = null;
 
 async function init() {
   wireTabs();
@@ -98,6 +100,15 @@ async function init() {
   wireRoomLobby();
   wireNameModal();
   wireSaveTemplateModal();
+
+  // Always-visible template catalog below the hero so first-time visitors
+  // can scroll straight into it without hunting for the tab.
+  if (browseTemplatesRoot) {
+    homepageTemplatesBrowser = new TemplatesBrowser({
+      root: browseTemplatesRoot,
+      onPick: handleTemplatePick,
+    });
+  }
 
   // React to URL changes
   onRouteChange(handleRoute);
