@@ -7,9 +7,10 @@
 import { getDB } from './db.js';
 
 export class TemplatesBrowser {
-  constructor({ root, onPick }) {
+  constructor({ root, onPick, onRemix }) {
     this.root = root;
     this.onPick = onPick;
+    this.onRemix = onRemix;
     this.activeCategory = 'all';
     this.query = '';
     this.templates = [];
@@ -51,14 +52,22 @@ export class TemplatesBrowser {
       ? `<span class="t-badge">${t.rankingCount} ranker${t.rankingCount === 1 ? '' : 's'}</span>`
       : '';
     return `
-      <button class="template-card" data-slug="${escapeAttr(t.slug)}">
+      <div class="template-card" data-slug="${escapeAttr(t.slug)}" role="button" tabindex="0">
         <div class="t-title">${emoji} ${escapeHtml(t.title)}</div>
         <div class="t-desc">${escapeHtml(t.description || '')}</div>
         <div class="t-meta">
           <span>${t.items.length} items</span>
           ${rankers}
         </div>
-      </button>
+        <button
+          type="button"
+          class="t-remix"
+          data-slug="${escapeAttr(t.slug)}"
+          title="Remix — edit title and items before ranking"
+          aria-label="Remix template">
+          <span aria-hidden="true">✎</span> Remix
+        </button>
+      </div>
     `;
   }
 
@@ -114,10 +123,31 @@ export class TemplatesBrowser {
 
   _wireCards() {
     this.root.querySelectorAll('.template-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const slug = card.dataset.slug;
-        const t = this.templates.find(x => x.slug === slug);
+      const slug = card.dataset.slug;
+      const lookup = () => this.templates.find(x => x.slug === slug);
+
+      card.addEventListener('click', (e) => {
+        // Clicks on the remix button bubble here; ignore them.
+        if (e.target.closest('.t-remix')) return;
+        const t = lookup();
         if (t) this.onPick(t);
+      });
+      // Keyboard a11y: the card is a div with role=button, so handle keys.
+      card.addEventListener('keydown', (e) => {
+        if (e.target.closest('.t-remix')) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const t = lookup();
+          if (t) this.onPick(t);
+        }
+      });
+    });
+    this.root.querySelectorAll('.t-remix').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const slug = btn.dataset.slug;
+        const t = this.templates.find(x => x.slug === slug);
+        if (t && this.onRemix) this.onRemix(t);
       });
     });
   }

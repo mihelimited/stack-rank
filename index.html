@@ -154,6 +154,22 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="remixModal">
+  <div class="modal">
+    <h3>Remix template</h3>
+    <p>Edit the title and items, then rank your own version.</p>
+    <label>Title</label>
+    <input type="text" id="remixTitle" maxlength="80">
+    <label>Items (one per line)</label>
+    <textarea id="remixItems" rows="10" style="width:100%; padding:12px 14px; background:rgba(0,0,0,0.3); color:var(--text); border:1px solid var(--border); border-radius:10px; font-size:14px; font-family:inherit; resize:vertical; line-height:1.5; margin-bottom:16px;"></textarea>
+    <div class="remix-count muted" id="remixCount">0 items</div>
+    <div class="modal-actions">
+      <button class="ghost" id="remixCancel">Cancel</button>
+      <button class="primary" id="remixStart">Rank now →</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="saveTemplateModal">
   <div class="modal">
     <h3>Save as template</h3>

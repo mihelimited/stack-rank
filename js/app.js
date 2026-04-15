@@ -84,6 +84,12 @@ const saveTemplateTitle = $('saveTemplateTitle');
 const saveTemplateCategory = $('saveTemplateCategory');
 const saveTemplateSubmit = $('saveTemplateSubmit');
 const saveTemplateCancel = $('saveTemplateCancel');
+const remixModal = $('remixModal');
+const remixTitleInput = $('remixTitle');
+const remixItemsInput = $('remixItems');
+const remixCount = $('remixCount');
+const remixStartBtn = $('remixStart');
+const remixCancelBtn = $('remixCancel');
 
 // ---------- Initialisation ----------
 let templatesBrowser = null;
@@ -100,6 +106,7 @@ async function init() {
   wireRoomLobby();
   wireNameModal();
   wireSaveTemplateModal();
+  wireRemixModal();
 
   // Always-visible template catalog below the hero so first-time visitors
   // can scroll straight into it without hunting for the tab.
@@ -107,6 +114,7 @@ async function init() {
     homepageTemplatesBrowser = new TemplatesBrowser({
       root: browseTemplatesRoot,
       onPick: handleTemplatePick,
+      onRemix: handleTemplateRemix,
     });
   }
 
@@ -159,6 +167,7 @@ function wireTabs() {
         templatesBrowser = new TemplatesBrowser({
           root: templatesPanel,
           onPick: handleTemplatePick,
+          onRemix: handleTemplateRemix,
         });
       }
       updateItemCount();
@@ -533,6 +542,17 @@ async function handleTemplatePick(template) {
   await enterTemplateFlow(template.slug);
 }
 
+// Opens the remix modal so the user can edit the title and items
+// before ranking. Submits as a fresh flow with the edited title/items.
+function handleTemplateRemix(template) {
+  if (!remixModal) return;
+  remixTitleInput.value = template.title;
+  remixItemsInput.value = template.items.join('\n');
+  updateRemixCount();
+  remixModal.classList.add('visible');
+  setTimeout(() => remixTitleInput.focus(), 50);
+}
+
 async function enterTemplateFlow(slug) {
   const db = await getDB();
   const template = await db.getTemplate(slug);
@@ -736,8 +756,47 @@ function openSaveTemplateModal() {
         .map(c => `<option value="${c.id}">${c.emoji} ${c.label}</option>`)
         .join('');
     });
-  saveTemplateTitle.value = '';
+  // Pre-fill with the in-progress title (e.g. from a remixed template)
+  saveTemplateTitle.value = state.source?.title || '';
   saveTemplateModal.classList.add('visible');
+}
+
+// ---------- Remix modal ----------
+function getRemixItems() {
+  return remixItemsInput.value
+    .split('\n')
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+function updateRemixCount() {
+  if (!remixCount) return;
+  const n = getRemixItems().length;
+  remixCount.textContent = `${n} item${n === 1 ? '' : 's'}`;
+  if (remixStartBtn) remixStartBtn.disabled = n < 2;
+}
+function wireRemixModal() {
+  if (!remixModal) return;
+  const close = () => remixModal.classList.remove('visible');
+  remixCancelBtn.addEventListener('click', close);
+  remixModal.addEventListener('click', (e) => {
+    if (e.target === remixModal) close();
+  });
+  remixItemsInput.addEventListener('input', updateRemixCount);
+  remixStartBtn.addEventListener('click', () => {
+    const title = (remixTitleInput.value || '').trim() || 'Remixed list';
+    const labels = getRemixItems();
+    if (labels.length < 2) return;
+    const items = labels.map((label, i) => ({
+      id: 'remix-' + i,
+      type: 'text',
+      value: label,
+      label,
+    }));
+    close();
+    // Clear template route if any — this is no longer the original template.
+    setRoute({ template: null, room: null });
+    startGame(items, { kind: 'fresh', title });
+  });
 }
 
 function wireSaveTemplateModal() {
