@@ -7,7 +7,7 @@
 import { InteractiveMergeSort, estimateComparisons } from './sorter.js';
 import { getDB, getFingerprint, computeAggregate } from './db.js';
 import { TemplatesBrowser } from './templates.js';
-import { renderPodium, sharePodium, downloadPodium } from './podium.js';
+import { renderPodium, sharePodium, downloadPodium, FORMATS as PODIUM_FORMATS } from './podium.js';
 import { getRoute, setRoute, onRouteChange } from './router.js';
 
 // ---------- State ----------
@@ -20,11 +20,12 @@ const state = {
   source: null,          // { kind: 'fresh'|'template'|'room', slug?, roomId?, title? }
   imageItems: [],
   roomUnsub: null,
-  // Pre-rendered podium File, cached on results show so we can call
-  // navigator.share synchronously inside the click handler (iOS
+  // Pre-rendered podium Files keyed by format, cached on results show so we
+  // can call navigator.share synchronously inside the click handler (iOS
   // transient-user-activation requires this — any async work before
   // share() on iOS drops the gesture token and the call is rejected).
-  podiumFile: null,
+  podiumFiles: { landscape: null, square: null, story: null },
+  podiumPreviewURLs: { landscape: null, square: null, story: null },
   podiumFileKey: null,   // invalidation key so we don't serve stale
 };
 
@@ -96,6 +97,9 @@ const remixItemsInput = $('remixItems');
 const remixCount = $('remixCount');
 const remixStartBtn = $('remixStart');
 const remixCancelBtn = $('remixCancel');
+const formatPickerModal = $('formatPickerModal');
+const formatPickerGrid = $('formatPickerGrid');
+const formatPickerCancel = $('formatPickerCancel');
 
 // ---------- Initialisation ----------
 let templatesBrowser = null;
@@ -113,6 +117,7 @@ async function init() {
   wireNameModal();
   wireSaveTemplateModal();
   wireRemixModal();
+  wireFormatPickerModal();
 
   // Always-visible template catalog below the hero so first-time visitors
   // can scroll straight into it without hunting for the tab.
@@ -157,7 +162,17 @@ function showSetup() {
   setupScreen.style.display = 'block';
   stopRoomSubscription();
   state.source = null;
-  state.podiumFile = null;
+  clearPodiumCache();
+}
+
+function clearPodiumCache() {
+  // Revoke any outstanding preview object URLs before discarding them
+  for (const key of Object.keys(state.podiumPreviewURLs)) {
+    const url = state.podiumPreviewURLs[key];
+    if (url) URL.revokeObjectURL(url);
+    state.podiumPreviewURLs[key] = null;
+  }
+  state.podiumFiles = { landscape: null, square: null, story: null };
   state.podiumFileKey = null;
 }
 
@@ -395,8 +410,10 @@ async function finishGame() {
     progressFill.style.width = '100%';
     progressText.textContent = `${state.comparisonsDone} battles · done`;
     // Pre-render podium so the Share button works synchronously on iOS.
-    // Room results are always text.
-    prerenderPodium(state.source?.title || 'My Stack Rank', result);
+    // Room results are always text. Pass the combined Borda aggregate so
+    // the hot-take callout can point out where you disagree with friends.
+    const roomAggregate = computeAggregate(room.rankings.map(r => ({ order: r.order })));
+    prerenderPodium(state.source?.title || 'My Stack Rank', result, roomAggregate);
     return;
   }
 
@@ -410,10 +427,11 @@ async function finishGame() {
   if (yourColumnHeading) yourColumnHeading.textContent = 'Your ranking';
   renderRanking(ranking, result);
 
+  let templateAggregate = null;
   if (state.source?.kind === 'template') {
     try {
-      const aggregate = await db.getAggregateRanking(state.source.slug);
-      showCommunityRanking(aggregate);
+      templateAggregate = await db.getAggregateRanking(state.source.slug);
+      showCommunityRanking(templateAggregate);
     } catch (e) {
       console.warn('Aggregate read failed:', e);
     }
@@ -431,7 +449,11 @@ async function finishGame() {
   // Pre-render the podium PNG for text-only rankings so navigator.share
   // can be called synchronously from the click handler on iOS.
   if (result.every(it => it.type === 'text')) {
-    prerenderPodium(state.source?.title || 'My Stack Rank', result);
+    prerenderPodium(
+      state.source?.title || 'My Stack Rank',
+      result,
+      templateAggregate,
+    );
   }
 }
 
@@ -515,7 +537,7 @@ function wireResults() {
   });
 
   if (shareBtn) {
-    shareBtn.addEventListener('click', async () => {
+    shareBtn.addEventListener('click', () => {
       const result = state.sorter.result();
       // Shareable images are text-only
       if (result.some(it => it.type !== 'text')) {
@@ -523,53 +545,7 @@ function wireResults() {
         setTimeout(() => shareBtn.textContent = 'Share image', 1500);
         return;
       }
-
-      // Try to use the file we pre-rendered when results showed.
-      // If it isn't ready yet (user tapped super fast), fall back to
-      // rendering now — but that path WILL lose the user-gesture
-      // token on iOS, so save-as-image modal will handle it.
-      let file = state.podiumFile;
-      if (!file) {
-        shareBtn.disabled = true;
-        shareBtn.textContent = 'Rendering…';
-        try {
-          const blob = await renderPodium({
-            title: state.source?.title || 'My Stack Rank',
-            items: result,
-          });
-          file = new File([blob], 'stack-rank.png', { type: 'image/png' });
-          state.podiumFile = file;
-        } catch (e) {
-          console.warn('Render failed:', e);
-          shareBtn.textContent = 'Render failed';
-          setTimeout(() => shareBtn.textContent = 'Share image', 1500);
-          shareBtn.disabled = false;
-          return;
-        }
-        shareBtn.disabled = false;
-        shareBtn.textContent = 'Share image';
-      }
-
-      // Call navigator.share synchronously (inside the click handler's
-      // microtask) so iOS keeps the user-gesture token alive.
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: state.source?.title || 'Stack Rank',
-            text: 'My ranking — made with Stack Rank',
-          });
-          return;
-        } catch (e) {
-          // AbortError just means the user dismissed the sheet — no fallback.
-          if (e && e.name === 'AbortError') return;
-          console.warn('navigator.share failed:', e);
-        }
-      }
-
-      // Fallback: display the image in a modal so the user can
-      // long-press (iOS) or right-click to save it.
-      showImageSaveFallback(file);
+      openFormatPicker();
     });
   }
 
@@ -923,21 +899,129 @@ async function copyTextToClipboard(text) {
 }
 
 // ---------- Podium pre-render (iOS-safe share) ----------
-// Renders the podium PNG eagerly so the share click handler can call
-// navigator.share synchronously (any awaited work between the click
-// and navigator.share() drops iOS's transient-user-activation token).
-async function prerenderPodium(title, items) {
-  const key = items.map(it => it.label).join('|') + '::' + (title || '');
+// Renders the podium PNG in every aspect ratio eagerly so the format-picker
+// click handlers can call navigator.share synchronously. Any awaited work
+// between a click and navigator.share() on iOS drops the transient
+// user-activation token, so we MUST have the File ready ahead of time.
+async function prerenderPodium(title, items, aggregate = null) {
+  const key = [
+    items.map(it => it.label).join('|'),
+    title || '',
+    aggregate?.totalRankers || 0,
+  ].join('::');
+
+  clearPodiumCache();
   state.podiumFileKey = key;
-  state.podiumFile = null;
-  try {
-    const blob = await renderPodium({ title, items });
-    // Guard against stale renders (user navigated away or re-ranked)
-    if (state.podiumFileKey !== key) return;
-    state.podiumFile = new File([blob], 'stack-rank.png', { type: 'image/png' });
-  } catch (e) {
-    console.warn('Podium pre-render failed:', e);
+
+  const formats = Object.keys(PODIUM_FORMATS);
+  await Promise.all(formats.map(async (format) => {
+    try {
+      const blob = await renderPodium({ title, items, aggregate, format });
+      // Guard against stale renders (user navigated away or re-ranked)
+      if (state.podiumFileKey !== key) return;
+      const file = new File([blob], `stack-rank-${format}.png`, { type: 'image/png' });
+      state.podiumFiles[format] = file;
+      state.podiumPreviewURLs[format] = URL.createObjectURL(file);
+      // If the format picker is already open, refresh its thumbs
+      if (formatPickerModal && formatPickerModal.classList.contains('visible')) {
+        refreshFormatPickerThumb(format);
+      }
+    } catch (e) {
+      console.warn(`Podium pre-render (${format}) failed:`, e);
+    }
+  }));
+}
+
+// ---------- Format picker modal ----------
+const FORMAT_PICKER_ORDER = [
+  { id: 'square',    label: 'Square',  sub: 'Twitter · WhatsApp',  ratio: '1 / 1' },
+  { id: 'story',     label: 'Story',   sub: 'Instagram · TikTok',  ratio: '9 / 16' },
+  { id: 'landscape', label: 'Banner',  sub: 'Facebook · link',     ratio: '1200 / 630' },
+];
+
+function openFormatPicker() {
+  if (!formatPickerModal || !formatPickerGrid) return;
+  formatPickerGrid.innerHTML = '';
+  for (const fmt of FORMAT_PICKER_ORDER) {
+    const file = state.podiumFiles[fmt.id];
+    const url = state.podiumPreviewURLs[fmt.id];
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'format-option';
+    btn.dataset.format = fmt.id;
+    btn.disabled = !file;
+    btn.innerHTML = `
+      <div class="format-thumb" style="aspect-ratio:${fmt.ratio};">
+        ${url ? `<img alt="${escapeHtml(fmt.label)} preview" src="${url}">` : '<span class="format-loading">Rendering…</span>'}
+      </div>
+      <div class="format-label">
+        <strong>${fmt.label}</strong>
+        <span>${fmt.sub}</span>
+      </div>
+    `;
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleFormatPick(fmt.id);
+    });
+    formatPickerGrid.appendChild(btn);
   }
+  formatPickerModal.classList.add('visible');
+}
+
+function refreshFormatPickerThumb(format) {
+  if (!formatPickerGrid) return;
+  const btn = formatPickerGrid.querySelector(`.format-option[data-format="${format}"]`);
+  if (!btn) return;
+  const url = state.podiumPreviewURLs[format];
+  const file = state.podiumFiles[format];
+  if (!file || !url) return;
+  const thumb = btn.querySelector('.format-thumb');
+  if (!thumb) return;
+  thumb.innerHTML = `<img alt="${format} preview" src="${url}">`;
+  btn.disabled = false;
+}
+
+function handleFormatPick(formatId) {
+  const file = state.podiumFiles[formatId];
+  if (!file) return;
+
+  // Call navigator.share synchronously inside this click handler so iOS
+  // keeps the user-gesture token alive. We can't await anything before the
+  // navigator.share() call — the returned promise is awaited afterward,
+  // which is fine.
+  let shareStarted = false;
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      const p = navigator.share({
+        files: [file],
+        title: state.source?.title || 'Stack Rank',
+        text: 'My ranking — made with Stack Rank',
+      });
+      shareStarted = true;
+      formatPickerModal.classList.remove('visible');
+      p.catch((e) => {
+        if (e && e.name === 'AbortError') return;
+        console.warn('navigator.share failed:', e);
+        showImageSaveFallback(file);
+      });
+    } catch (e) {
+      console.warn('navigator.share threw synchronously:', e);
+    }
+  }
+
+  if (!shareStarted) {
+    formatPickerModal.classList.remove('visible');
+    showImageSaveFallback(file);
+  }
+}
+
+function wireFormatPickerModal() {
+  if (!formatPickerModal) return;
+  const close = () => formatPickerModal.classList.remove('visible');
+  if (formatPickerCancel) formatPickerCancel.addEventListener('click', close);
+  formatPickerModal.addEventListener('click', (e) => {
+    if (e.target === formatPickerModal) close();
+  });
 }
 
 // Fallback image-save modal for when navigator.share isn't available

@@ -484,6 +484,80 @@ button.ghost:hover { background: rgba(255, 255, 255, 0.12); }
   margin-bottom: 14px;
 }
 
+/* Format picker modal */
+.format-picker-modal { max-width: 640px; }
+.format-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.format-option {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.15s ease, background 0.2s ease;
+  text-align: center;
+}
+.format-option:hover:not(:disabled),
+.format-option:focus-visible:not(:disabled) {
+  border-color: var(--accent);
+  background: rgba(124, 92, 255, 0.12);
+  transform: translateY(-2px);
+  outline: none;
+}
+.format-option:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+.format-thumb {
+  width: 100%;
+  background: #0f0c29;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 220px;
+}
+.format-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.format-loading {
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 30px 8px;
+}
+.format-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+.format-label strong { font-weight: 800; }
+.format-label span {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+@media (max-width: 520px) {
+  .format-picker { grid-template-columns: 1fr; }
+  .format-option { flex-direction: row; text-align: left; align-items: center; }
+  .format-thumb { width: 96px; flex: 0 0 96px; max-height: 120px; }
+  .format-label { flex: 1; }
+}
+
 /* ---------- Game screen ---------- */
 .battle {
   display: grid;
