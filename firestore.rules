@@ -1,0 +1,88 @@
+rules_version = '2';
+
+// Stack Rank Firestore security rules
+// -----------------------------------------------------------------------------
+// Design:
+//   * No auth — everything is anonymous via a client-side fingerprint.
+//   * Reads are fully public on /templates and /rooms.
+//   * Writes are rate-shaped by validating document contents server-side.
+//   * System templates (creator === 'system') are only writable via the
+//     Firebase Admin SDK (the seeding script or the SEO cron job), which
+//     bypasses these rules.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Templates ----------
+    match /templates/{templateId} {
+      allow read: if true;
+
+      // Creating a user template — creator must be "user", must have items,
+      // and rankingCount must start at 0.
+      allow create: if request.resource.data.creator == 'user'
+                 && request.resource.data.items is list
+                 && request.resource.data.items.size() >= 2
+                 && request.resource.data.items.size() <= 500
+                 && request.resource.data.title is string
+                 && request.resource.data.title.size() >= 1
+                 && request.resource.data.title.size() <= 120
+                 && request.resource.data.rankingCount == 0;
+
+      // Updates: only allow updating rankingCount on system or user templates,
+      // and only by +1 (to match the ranking submission).
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                       .hasOnly(['rankingCount', 'lastUpdated'])
+                 && request.resource.data.rankingCount == resource.data.rankingCount + 1;
+
+      allow delete: if false; // never via client
+
+      // ---------- Template rankings ----------
+      match /rankings/{rankingId} {
+        allow read: if true;
+
+        // rankingId must be the user's fingerprint (dedupe)
+        // Order must be a list matching the parent template's items exactly.
+        allow create, update: if
+          rankingId == request.resource.data.fingerprint
+          && request.resource.data.order is list
+          && request.resource.data.order.size() >= 2
+          && request.resource.data.order.size() <= 500
+          && get(/databases/$(database)/documents/templates/$(templateId)).data.items.toSet()
+             == request.resource.data.order.toSet();
+
+        allow delete: if false;
+      }
+    }
+
+    // ---------- Rooms ----------
+    match /rooms/{roomId} {
+      allow read: if true;
+
+      allow create: if request.resource.data.items is list
+                 && request.resource.data.items.size() >= 2
+                 && request.resource.data.items.size() <= 200
+                 && request.resource.data.creator is string
+                 && request.resource.data.creator.size() >= 1
+                 && request.resource.data.creator.size() <= 50;
+
+      allow update, delete: if false;
+
+      match /rankings/{rankingId} {
+        allow read: if true;
+
+        allow create, update: if
+          rankingId == request.resource.data.fingerprint
+          && request.resource.data.order is list
+          && request.resource.data.order.size() >= 2
+          && request.resource.data.order.size() <= 200
+          && request.resource.data.name is string
+          && request.resource.data.name.size() >= 1
+          && request.resource.data.name.size() <= 50
+          && get(/databases/$(database)/documents/rooms/$(roomId)).data.items.toSet()
+             == request.resource.data.order.toSet();
+
+        allow delete: if false;
+      }
+    }
+  }
+}

@@ -1,0 +1,367 @@
+{
+  "version": 1,
+  "categories": [
+    { "id": "food",       "label": "Food",          "emoji": "🍕" },
+    { "id": "sports",     "label": "Sports",        "emoji": "⚽" },
+    { "id": "films",      "label": "Films",         "emoji": "🎬" },
+    { "id": "code",       "label": "Programming",   "emoji": "💻" },
+    { "id": "london",     "label": "London",        "emoji": "🇬🇧" },
+    { "id": "restaurants","label": "Restaurants",   "emoji": "🍽️" },
+    { "id": "games",      "label": "Games",         "emoji": "🎮" },
+    { "id": "music",      "label": "Music",         "emoji": "🎵" },
+    { "id": "travel",     "label": "Travel",        "emoji": "✈️" },
+    { "id": "history",    "label": "History",       "emoji": "🏛️" }
+  ],
+  "templates": [
+    {
+      "slug": "best-pizza-toppings",
+      "title": "Best Pizza Toppings",
+      "category": "food",
+      "description": "The great topping debate — rank them from must-have to pineapple.",
+      "items": ["Pepperoni", "Mushroom", "Sausage", "Ham", "Olives", "Onion", "Bell Peppers", "Bacon", "Pineapple", "Anchovies", "Chicken", "Jalapeños"]
+    },
+    {
+      "slug": "breakfast-foods",
+      "title": "Best Breakfast Foods",
+      "category": "food",
+      "description": "Rank the most important meal of the day.",
+      "items": ["Pancakes", "Waffles", "Bacon", "Eggs Benedict", "French Toast", "Scrambled Eggs", "Cereal", "Avocado Toast", "Croissant", "Full English", "Porridge", "Bagel"]
+    },
+    {
+      "slug": "ice-cream-flavours",
+      "title": "Best Ice Cream Flavours",
+      "category": "food",
+      "description": "Rank the classic and the controversial.",
+      "items": ["Vanilla", "Chocolate", "Strawberry", "Mint Choc Chip", "Cookies & Cream", "Pistachio", "Rocky Road", "Salted Caramel", "Rum Raisin", "Neapolitan"]
+    },
+    {
+      "slug": "fast-food-chains",
+      "title": "Best Fast Food Chains",
+      "category": "food",
+      "description": "Drive-thru royalty, ranked.",
+      "items": ["McDonald's", "Burger King", "KFC", "Subway", "Taco Bell", "Chipotle", "Five Guys", "In-N-Out", "Wendy's", "Popeyes", "Chick-fil-A", "Domino's"]
+    },
+    {
+      "slug": "cuisines-of-the-world",
+      "title": "Best Cuisines of the World",
+      "category": "food",
+      "description": "If you could only eat one for the rest of your life…",
+      "items": ["Italian", "Japanese", "Mexican", "Thai", "Indian", "French", "Chinese", "Greek", "Spanish", "Vietnamese", "Korean", "Middle Eastern"]
+    },
+    {
+      "slug": "premier-league-clubs",
+      "title": "Greatest Premier League Clubs",
+      "category": "sports",
+      "description": "Rank the giants of English football.",
+      "items": ["Manchester United", "Liverpool", "Arsenal", "Chelsea", "Manchester City", "Tottenham", "Leeds United", "Everton", "Newcastle United", "Aston Villa"]
+    },
+    {
+      "slug": "footballers-of-all-time",
+      "title": "Greatest Footballers of All Time",
+      "category": "sports",
+      "description": "The GOAT debate, settled (by you).",
+      "items": ["Lionel Messi", "Cristiano Ronaldo", "Pelé", "Diego Maradona", "Zinedine Zidane", "Ronaldinho", "Johan Cruyff", "Ronaldo Nazário", "Thierry Henry", "Franz Beckenbauer"]
+    },
+    {
+      "slug": "olympic-sports",
+      "title": "Best Olympic Sports to Watch",
+      "category": "sports",
+      "description": "What do you actually tune in for?",
+      "items": ["Athletics", "Gymnastics", "Swimming", "Basketball", "Football", "Cycling", "Tennis", "Diving", "Boxing", "Volleyball", "Skateboarding", "Climbing"]
+    },
+    {
+      "slug": "tennis-grand-slams",
+      "title": "Best Tennis Grand Slams",
+      "category": "sports",
+      "description": "Four tournaments. One champion in your heart.",
+      "items": ["Wimbledon", "US Open", "French Open", "Australian Open"]
+    },
+    {
+      "slug": "f1-drivers-modern-era",
+      "title": "Best F1 Drivers of the Modern Era",
+      "category": "sports",
+      "description": "The 21st-century grid, ranked.",
+      "items": ["Lewis Hamilton", "Max Verstappen", "Michael Schumacher", "Sebastian Vettel", "Fernando Alonso", "Kimi Räikkönen", "Charles Leclerc", "Lando Norris", "Daniel Ricciardo", "Jenson Button"]
+    },
+    {
+      "slug": "best-films-of-all-time",
+      "title": "Best Films of All Time",
+      "category": "films",
+      "description": "Rank the immortal classics.",
+      "items": ["The Godfather", "Pulp Fiction", "The Dark Knight", "Schindler's List", "Forrest Gump", "The Shawshank Redemption", "Goodfellas", "Fight Club", "Inception", "Parasite", "The Lord of the Rings", "Citizen Kane"]
+    },
+    {
+      "slug": "christopher-nolan-films",
+      "title": "Best Christopher Nolan Films",
+      "category": "films",
+      "description": "Rank the master of the mind-bend.",
+      "items": ["The Dark Knight", "Inception", "Interstellar", "Memento", "Dunkirk", "Tenet", "The Prestige", "Oppenheimer", "Batman Begins", "Insomnia"]
+    },
+    {
+      "slug": "pixar-movies",
+      "title": "Best Pixar Movies",
+      "category": "films",
+      "description": "Which animated tearjerker rules them all?",
+      "items": ["Toy Story", "Finding Nemo", "The Incredibles", "WALL-E", "Up", "Ratatouille", "Inside Out", "Coco", "Monsters, Inc.", "Toy Story 3", "A Bug's Life", "Soul"]
+    },
+    {
+      "slug": "marvel-movies",
+      "title": "Best Marvel Cinematic Universe Movies",
+      "category": "films",
+      "description": "22 films, one ranking.",
+      "items": ["Iron Man", "The Avengers", "Guardians of the Galaxy", "Captain America: The Winter Soldier", "Thor: Ragnarok", "Black Panther", "Avengers: Infinity War", "Avengers: Endgame", "Spider-Man: No Way Home", "Doctor Strange"]
+    },
+    {
+      "slug": "studio-ghibli-films",
+      "title": "Best Studio Ghibli Films",
+      "category": "films",
+      "description": "Miyazaki's magic, ranked.",
+      "items": ["Spirited Away", "My Neighbour Totoro", "Princess Mononoke", "Howl's Moving Castle", "Castle in the Sky", "Kiki's Delivery Service", "Ponyo", "The Wind Rises", "Grave of the Fireflies", "Nausicaä of the Valley of the Wind"]
+    },
+    {
+      "slug": "programming-languages",
+      "title": "Best Programming Languages",
+      "category": "code",
+      "description": "Pick your favourite — or your least painful.",
+      "items": ["JavaScript", "Python", "TypeScript", "Rust", "Go", "C++", "Java", "Ruby", "Swift", "Kotlin", "C#", "Elixir"]
+    },
+    {
+      "slug": "js-frameworks",
+      "title": "Best JavaScript Frameworks",
+      "category": "code",
+      "description": "The framework wars, settled.",
+      "items": ["React", "Vue", "Svelte", "Angular", "Solid", "Next.js", "Nuxt", "Remix", "Astro", "Qwik"]
+    },
+    {
+      "slug": "code-editors",
+      "title": "Best Code Editors",
+      "category": "code",
+      "description": "Where do you actually spend your day?",
+      "items": ["VS Code", "Vim", "Neovim", "JetBrains IDEs", "Sublime Text", "Emacs", "Zed", "Cursor", "Xcode", "Atom"]
+    },
+    {
+      "slug": "databases",
+      "title": "Best Databases",
+      "category": "code",
+      "description": "Rank the datastores you love (and resent).",
+      "items": ["PostgreSQL", "MySQL", "SQLite", "MongoDB", "Redis", "Firestore", "DynamoDB", "Elasticsearch", "Cassandra", "Neo4j"]
+    },
+    {
+      "slug": "devops-tools",
+      "title": "Best DevOps Tools",
+      "category": "code",
+      "description": "Ship it, observe it, rank it.",
+      "items": ["Docker", "Kubernetes", "Terraform", "GitHub Actions", "Ansible", "Jenkins", "Prometheus", "Grafana", "Datadog", "ArgoCD"]
+    },
+    {
+      "slug": "london-landmarks",
+      "title": "Best London Landmarks",
+      "category": "london",
+      "description": "Iconic spots in the capital.",
+      "items": ["Tower Bridge", "Big Ben", "Buckingham Palace", "The London Eye", "St Paul's Cathedral", "Tower of London", "The Shard", "Westminster Abbey", "Trafalgar Square", "Hyde Park", "Camden Market", "Covent Garden"]
+    },
+    {
+      "slug": "london-neighbourhoods",
+      "title": "Best London Neighbourhoods to Live In",
+      "category": "london",
+      "description": "If money weren't a thing…",
+      "items": ["Shoreditch", "Notting Hill", "Hampstead", "Clapham", "Islington", "Brixton", "Greenwich", "Chelsea", "Dalston", "Peckham", "Richmond", "Bermondsey"]
+    },
+    {
+      "slug": "london-parks",
+      "title": "Best Parks in London",
+      "category": "london",
+      "description": "Which green space wins?",
+      "items": ["Hyde Park", "Regent's Park", "Hampstead Heath", "Richmond Park", "Greenwich Park", "St James's Park", "Battersea Park", "Victoria Park", "Kensington Gardens", "Clapham Common"]
+    },
+    {
+      "slug": "london-museums",
+      "title": "Best London Museums",
+      "category": "london",
+      "description": "Culture, ranked.",
+      "items": ["British Museum", "Natural History Museum", "Tate Modern", "Science Museum", "V&A", "National Gallery", "Imperial War Museum", "Tate Britain", "Museum of London", "Design Museum"]
+    },
+    {
+      "slug": "london-tube-lines",
+      "title": "Best London Tube Lines",
+      "category": "london",
+      "description": "Rank the lines by vibe, speed, and chaos.",
+      "items": ["Victoria", "Jubilee", "Central", "Piccadilly", "Northern", "Bakerloo", "District", "Circle", "Elizabeth", "Hammersmith & City", "Metropolitan", "Waterloo & City"]
+    },
+    {
+      "slug": "michelin-london",
+      "title": "Best Michelin-Starred Restaurants in London",
+      "category": "restaurants",
+      "description": "Tasting-menu territory.",
+      "items": ["The Ledbury", "Core by Clare Smyth", "Restaurant Gordon Ramsay", "Sketch (The Lecture Room)", "Alain Ducasse at The Dorchester", "Hélène Darroze at The Connaught", "The Ritz", "Claude Bosi at Bibendum", "Kitchen Table", "A. Wong"]
+    },
+    {
+      "slug": "london-burger-joints",
+      "title": "Best Burger Joints in London",
+      "category": "restaurants",
+      "description": "Where to get the best patty in the city.",
+      "items": ["Bleecker Burger", "Smashing Kitchen", "Patty & Bun", "Honest Burgers", "MEATliquor", "Dirty Burger", "Black Bear Burger", "Shake Shack", "Five Guys", "Lucky Chip"]
+    },
+    {
+      "slug": "london-pubs",
+      "title": "Best Pubs in London",
+      "category": "restaurants",
+      "description": "A pint with a proper view.",
+      "items": ["The Churchill Arms", "The Mayflower", "The George Inn", "Ye Olde Cheshire Cheese", "The Blackfriar", "The Dove", "The Prospect of Whitby", "The Lamb & Flag", "The Spaniards Inn", "The Palm Tree"]
+    },
+    {
+      "slug": "pizza-places-london",
+      "title": "Best Pizza Places in London",
+      "category": "restaurants",
+      "description": "Neapolitan, New York, or Roman — rank them.",
+      "items": ["Pizza Pilgrims", "Homeslice", "Franco Manca", "Flat Iron Square Pizza", "50 Kalò", "Santa Maria", "Pizza East", "Yard Sale Pizza", "Sodo", "L'Antica Pizzeria da Michele"]
+    },
+    {
+      "slug": "coffee-shops-london",
+      "title": "Best Coffee Shops in London",
+      "category": "restaurants",
+      "description": "Where the specialty-coffee crowd goes.",
+      "items": ["Monmouth Coffee", "Workshop Coffee", "Prufrock Coffee", "Kaffeine", "Allpress", "Ozone Coffee", "Climpson & Sons", "Redemption Roasters", "Caravan", "Grind"]
+    },
+    {
+      "slug": "best-video-games",
+      "title": "Best Video Games of All Time",
+      "category": "games",
+      "description": "Rank the all-time bangers.",
+      "items": ["The Legend of Zelda: Breath of the Wild", "Red Dead Redemption 2", "The Witcher 3", "Elden Ring", "Super Mario 64", "Portal 2", "Half-Life 2", "Minecraft", "Tetris", "Dark Souls", "Grand Theft Auto V", "Ocarina of Time"]
+    },
+    {
+      "slug": "nintendo-consoles",
+      "title": "Best Nintendo Consoles",
+      "category": "games",
+      "description": "Rank Nintendo's boxes of joy.",
+      "items": ["Nintendo Switch", "Nintendo 64", "Super Nintendo", "GameCube", "Game Boy", "Nintendo DS", "Wii", "NES", "Game Boy Advance", "Wii U"]
+    },
+    {
+      "slug": "board-games",
+      "title": "Best Board Games",
+      "category": "games",
+      "description": "Friendships ruined, ranked.",
+      "items": ["Catan", "Carcassonne", "Ticket to Ride", "Monopoly", "Risk", "Chess", "Scrabble", "Codenames", "Wingspan", "Azul", "Pandemic", "Cluedo"]
+    },
+    {
+      "slug": "mario-games",
+      "title": "Best Mario Games",
+      "category": "games",
+      "description": "It's-a ranking, Mario.",
+      "items": ["Super Mario 64", "Super Mario Odyssey", "Super Mario Galaxy", "Super Mario World", "Super Mario Bros. 3", "Mario Kart 8", "Super Mario Bros.", "Super Mario Galaxy 2", "Super Mario Sunshine", "Paper Mario"]
+    },
+    {
+      "slug": "soulslikes",
+      "title": "Best Soulslike Games",
+      "category": "games",
+      "description": "Rank the games that broke you.",
+      "items": ["Elden Ring", "Dark Souls", "Dark Souls III", "Bloodborne", "Sekiro", "Dark Souls II", "Demon's Souls", "Nioh", "Lies of P", "Hollow Knight"]
+    },
+    {
+      "slug": "greatest-musicians",
+      "title": "Greatest Musicians of All Time",
+      "category": "music",
+      "description": "Pick the legend you'd keep listening to forever.",
+      "items": ["The Beatles", "Michael Jackson", "Queen", "Bob Dylan", "David Bowie", "Prince", "Stevie Wonder", "Elvis Presley", "Pink Floyd", "Beyoncé", "Radiohead", "Nirvana"]
+    },
+    {
+      "slug": "music-decades",
+      "title": "Best Decades for Music",
+      "category": "music",
+      "description": "When did music peak?",
+      "items": ["1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"]
+    },
+    {
+      "slug": "music-genres",
+      "title": "Best Music Genres",
+      "category": "music",
+      "description": "Rank them by how often you press play.",
+      "items": ["Rock", "Pop", "Hip Hop", "Electronic", "R&B", "Jazz", "Classical", "Country", "Indie", "Metal", "Folk", "Reggae"]
+    },
+    {
+      "slug": "beatles-albums",
+      "title": "Best Beatles Albums",
+      "category": "music",
+      "description": "Rank the Fab Four's studio output.",
+      "items": ["Abbey Road", "Sgt. Pepper's Lonely Hearts Club Band", "Revolver", "The White Album", "Rubber Soul", "Let It Be", "Help!", "A Hard Day's Night", "Magical Mystery Tour", "Please Please Me"]
+    },
+    {
+      "slug": "instruments",
+      "title": "Best Musical Instruments",
+      "category": "music",
+      "description": "If you had to learn one.",
+      "items": ["Guitar", "Piano", "Drums", "Violin", "Saxophone", "Bass", "Cello", "Trumpet", "Flute", "Ukulele"]
+    },
+    {
+      "slug": "european-cities",
+      "title": "Best Cities to Visit in Europe",
+      "category": "travel",
+      "description": "Rank the classic European city break.",
+      "items": ["Paris", "Rome", "Barcelona", "Amsterdam", "Prague", "Lisbon", "Vienna", "Budapest", "Copenhagen", "Berlin", "Florence", "Edinburgh"]
+    },
+    {
+      "slug": "us-national-parks",
+      "title": "Best US National Parks",
+      "category": "travel",
+      "description": "America's greatest outdoors.",
+      "items": ["Yellowstone", "Yosemite", "Grand Canyon", "Zion", "Rocky Mountain", "Glacier", "Acadia", "Great Smoky Mountains", "Bryce Canyon", "Arches"]
+    },
+    {
+      "slug": "asian-countries-to-visit",
+      "title": "Best Asian Countries to Visit",
+      "category": "travel",
+      "description": "Which would you fly to tomorrow?",
+      "items": ["Japan", "Thailand", "Vietnam", "South Korea", "Indonesia", "Singapore", "India", "Malaysia", "Philippines", "Sri Lanka", "Cambodia", "Taiwan"]
+    },
+    {
+      "slug": "beach-destinations",
+      "title": "Best Beach Destinations",
+      "category": "travel",
+      "description": "Feet-in-the-sand rankings.",
+      "items": ["Maldives", "Bora Bora", "Seychelles", "Maui", "Santorini", "Bali", "Phuket", "Fiji", "Mauritius", "Barbados", "Costa Rica", "Zanzibar"]
+    },
+    {
+      "slug": "bucket-list-experiences",
+      "title": "Best Bucket List Experiences",
+      "category": "travel",
+      "description": "What would you do with one perfect trip?",
+      "items": ["See the Northern Lights", "Safari in Africa", "Great Barrier Reef", "Machu Picchu", "Great Wall of China", "Pyramids of Giza", "Petra", "Antarctica", "Amazon Rainforest", "Taj Mahal"]
+    },
+    {
+      "slug": "us-presidents",
+      "title": "Greatest US Presidents",
+      "category": "history",
+      "description": "Rank the Oval Office all-time greats.",
+      "items": ["Abraham Lincoln", "George Washington", "Franklin D. Roosevelt", "Theodore Roosevelt", "Thomas Jefferson", "Dwight D. Eisenhower", "John F. Kennedy", "Barack Obama", "Harry S. Truman", "Ronald Reagan"]
+    },
+    {
+      "slug": "british-monarchs",
+      "title": "Greatest British Monarchs",
+      "category": "history",
+      "description": "Rank the crowned heads of Britain.",
+      "items": ["Elizabeth I", "Victoria", "Henry VIII", "Elizabeth II", "Alfred the Great", "Edward III", "William the Conqueror", "Henry V", "George V", "Charles II"]
+    },
+    {
+      "slug": "world-wonders",
+      "title": "Greatest Wonders of the World",
+      "category": "history",
+      "description": "Ancient and modern, ranked.",
+      "items": ["Great Wall of China", "Pyramids of Giza", "Colosseum", "Machu Picchu", "Petra", "Taj Mahal", "Christ the Redeemer", "Chichen Itza", "Stonehenge", "Angkor Wat"]
+    },
+    {
+      "slug": "scientists",
+      "title": "Greatest Scientists of All Time",
+      "category": "history",
+      "description": "Who moved humanity forward the most?",
+      "items": ["Albert Einstein", "Isaac Newton", "Charles Darwin", "Marie Curie", "Nikola Tesla", "Galileo Galilei", "Stephen Hawking", "Ada Lovelace", "Alan Turing", "Carl Sagan", "Rosalind Franklin", "Richard Feynman"]
+    },
+    {
+      "slug": "historical-leaders",
+      "title": "Most Influential Historical Leaders",
+      "category": "history",
+      "description": "Who shaped the world the most?",
+      "items": ["Alexander the Great", "Julius Caesar", "Napoleon Bonaparte", "Winston Churchill", "Mahatma Gandhi", "Nelson Mandela", "Genghis Khan", "Cleopatra", "Abraham Lincoln", "Queen Elizabeth I"]
+    }
+  ]
+}
